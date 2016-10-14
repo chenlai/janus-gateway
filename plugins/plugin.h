@@ -198,6 +198,7 @@ static janus_plugin janus_echotest_plugin =
 		.handle_message = NULL,			\
 		.setup_media = NULL,			\
 		.incoming_rtp = NULL,			\
+		.utun_incoming_rtp = NULL,		\
 		.incoming_rtcp = NULL,			\
 		.incoming_data = NULL,			\
 		.slow_link = NULL,				\
@@ -322,6 +323,9 @@ struct janus_plugin {
 	 * @param[in] handle The plugin/gateway session used for this peer
 	 * @returns A json_t object with the requested info */
 	json_t *(* const query_session)(janus_plugin_session *handle);
+
+	void (* const utun_incoming_rtp)(janus_plugin_session *handle, int video, char *buf, int len);
+
 
 };
 

@@ -1,1 +1,8 @@
 ; The Echo Test plugin doesn't need any configuration
+
+
+[general]
+
+utun_ip = 10.0.2.86
+utun_port = 2202
+local_port = 2022

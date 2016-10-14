@@ -105,6 +105,8 @@ janus_SOURCES = \
 	turnrest.h \
 	utils.c \
 	utils.h \
+	udp2utun.c \
+	udp2utun.h \
 	plugins/plugin.c \
 	plugins/plugin.h \
 	transports/transport.h \
