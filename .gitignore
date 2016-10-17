@@ -45,3 +45,5 @@ Makefile.in
 
 .deps
 .dirstamp
+.tags
+.tags_sorted_by_file
