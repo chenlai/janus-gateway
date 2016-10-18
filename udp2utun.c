@@ -3,6 +3,7 @@
 
 #include "udp2utun.h"
 #include "debug.h"
+#include "rtp.h"
 
 /*#define INADDR_ANY "0.0.0.0"*/
 #define BUFLEN 1600
@@ -14,6 +15,11 @@ static char buffer[BUFLEN];
 static gpointer udp_recv_handle(gpointer data);
 
 // init handle thread 
+static gboolean janus_is_rtcp(gchar *buf) {
+    rtp_header *header = (rtp_header *)buf;
+    return ((header->type >= 64) && (header->type < 96));
+}
+
 
 udp_handle* init_udp_handle(const char *remote_ip, const unsigned int  remote_port,const unsigned int local_port){
 
@@ -191,6 +197,7 @@ static gpointer udp_recv_handle(gpointer data){
 
         if (FD_ISSET(sd, &read_fds)){
             len =recvfrom(sd, buffer, BUFLEN, 0,NULL ,NULL );
+            JANUS_LOG(LOG_DBG, "recv_data......%d\n", len);
             if (len < 0)
             {
                 JANUS_LOG(LOG_ERR, "[handle id] UDP receve fail : %s", strerror(errno));
@@ -198,7 +205,11 @@ static gpointer udp_recv_handle(gpointer data){
             }
 
             if (handle->plugin != NULL && handle->plugin_session != NULL){
-                handle->plugin->utun_incoming_rtp(handle->plugin_session, 1, buffer, len);
+                if(janus_is_rtcp(buffer))
+                    handle->plugin->utun_incoming_rtcp(handle->plugin_session, 1, buffer, len);
+                else{
+                    handle->plugin->utun_incoming_rtp(handle->plugin_session, 1, buffer, len);
+                }
             }
             else{
                 JANUS_LOG(LOG_ERR, "janus plugin has ");

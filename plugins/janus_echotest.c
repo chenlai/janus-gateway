@@ -121,6 +121,7 @@ struct janus_plugin_result *janus_echotest_handle_message(janus_plugin_session *
 void janus_echotest_setup_media(janus_plugin_session *handle);
 void janus_echotest_incoming_rtp(janus_plugin_session *handle, int video, char *buf, int len);
 void janus_echotest_incoming_rtcp(janus_plugin_session *handle, int video, char *buf, int len);
+void janus_echotest_utun_incoming_rtcp(janus_plugin_session *handle, int video, char *buf, int len);
 void janus_echotest_utun_incoming_rtp(janus_plugin_session *handle, int video, char *buf, int len);
 void janus_echotest_incoming_data(janus_plugin_session *handle, char *buf, int len);
 void janus_echotest_slow_link(janus_plugin_session *handle, int uplink, int video);
@@ -588,13 +589,35 @@ void janus_echotest_incoming_rtp(janus_plugin_session *handle, int video, char *
 		// 	gateway->relay_rtp(handle, video, buf, len);  Not send to client dirrect , get the buffer from message queue.
 
 			// send to uTun server
-			udp_send_handle(session->utunserver, buf, len);
+            if (video == 1)
+			    udp_send_handle(session->utunserver, buf, len);
 		}
 	}
 }
 
 void janus_echotest_incoming_rtcp(janus_plugin_session *handle, int video, char *buf, int len) {
-	return; //TODO in utun 
+	if(handle == NULL || handle->stopped || g_atomic_int_get(&stopping) || !g_atomic_int_get(&initialized))
+		return;
+	/* Simple echo test */
+	if(gateway) {
+		janus_echotest_session *session = (janus_echotest_session *)handle->plugin_handle;	
+		if(!session) {
+			JANUS_LOG(LOG_ERR, "No session associated with this handle...\n");
+			return;
+		}
+		if(session->destroyed)
+			return;
+		if(session->bitrate > 0)
+			janus_rtcp_cap_remb(buf, len, session->bitrate);
+
+        if (video == 1)
+			    udp_send_handle(session->utunserver, buf, len);
+
+		/*gateway->relay_rtcp(handle, video, buf, len);*/
+	}
+}
+
+void janus_echotest_utun_incoming_rtcp(janus_plugin_session *handle, int video, char *buf, int len) {
 	if(handle == NULL || handle->stopped || g_atomic_int_get(&stopping) || !g_atomic_int_get(&initialized))
 		return;
 	/* Simple echo test */
@@ -611,6 +634,7 @@ void janus_echotest_incoming_rtcp(janus_plugin_session *handle, int video, char 
 		gateway->relay_rtcp(handle, video, buf, len);
 	}
 }
+
 
 void janus_echotest_incoming_data(janus_plugin_session *handle, char *buf, int len) {
 	return ; //TODO in utun

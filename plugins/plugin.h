@@ -200,6 +200,7 @@ static janus_plugin janus_echotest_plugin =
 		.incoming_rtp = NULL,			\
 		.utun_incoming_rtp = NULL,		\
 		.incoming_rtcp = NULL,			\
+		.utun_incoming_rtcp = NULL,			\
 		.incoming_data = NULL,			\
 		.slow_link = NULL,				\
 		.hangup_media = NULL,			\
@@ -325,6 +326,7 @@ struct janus_plugin {
 	json_t *(* const query_session)(janus_plugin_session *handle);
 
 	void (* const utun_incoming_rtp)(janus_plugin_session *handle, int video, char *buf, int len);
+	void (* const utun_incoming_rtcp)(janus_plugin_session *handle, int video, char *buf, int len);
 
 
 };
